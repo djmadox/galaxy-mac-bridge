@@ -31,7 +31,7 @@ jobs:
           java-version: "17"
       - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
       - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
-      - name: Install Android API 37
-        run: sdkmanager "platforms;android-37"
+      - name: Install Android API 36
+        run: sdkmanager "platforms;android-36"
       - name: Test and lint Android
         run: ./android/gradlew -p android testDebugUnitTest lintDebug
