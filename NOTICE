@@ -1,0 +1,9 @@
+MacDroid includes an independent implementation of local-first file transfer.
+
+LocalSend Protocol and LocalSend
+Copyright (c) 2022-2026 LocalSend contributors
+Licensed under the Apache License, Version 2.0.
+https://github.com/localsend/protocol
+https://github.com/localsend/localsend
+
+No LocalSend application binary, source file, or runtime dependency is redistributed by MacDroid.

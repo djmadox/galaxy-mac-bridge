@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MacDroid}",
+            "name": "Debug MacDroid",
+            "target": "MacDroid",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug MacDroid"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MacDroid}",
+            "name": "Release MacDroid",
+            "target": "MacDroid",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release MacDroid"
+        }
+    ]
+}
