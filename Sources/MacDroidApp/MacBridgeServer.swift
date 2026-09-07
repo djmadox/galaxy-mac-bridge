@@ -30,11 +30,12 @@ final class MacBridgeServer: @unchecked Sendable {
     var onPairingCode: (@Sendable (String, String) -> Void)?
     var onConnected: (@Sendable (String) -> Void)?
     var onDisconnected: (@Sendable () -> Void)?
+    var onUnpaired: (@Sendable () -> Void)?
     var onMessage: (@Sendable (BridgeMessage) -> Void)?
     var onIncomingFileStatus: (@Sendable (FileTransferStatusPayload, String) -> Void)?
 
     private let queue = DispatchQueue(label: "se.macdroid.bridge.listener")
-    private let identity: PairingIdentity
+    private var identity: PairingIdentity
     private let fileReceiver = MacFileTransferReceiver()
     private var listener: NWListener?
     private var activePeer: MacPeerConnection?
@@ -80,6 +81,20 @@ final class MacBridgeServer: @unchecked Sendable {
 
     func confirmPairing() {
         queue.async { [weak self] in self?.activePeer?.confirmPairing() }
+    }
+
+    func forgetPairedDevice() {
+        queue.async { [weak self] in
+            guard let self else { return }
+            MacTrustStore.removeAll()
+            self.identity = MacIdentityStore.reset()
+            self.fileReceiver.abortAll()
+            self.onUnpaired?()
+            guard let peer = self.activePeer else { return }
+            peer.send(kind: .unpair, payload: EmptyPayload()) { [weak peer] _ in
+                peer?.cancel()
+            }
+        }
     }
 
     func sendSMS(address: String, body: String) {
@@ -248,6 +263,14 @@ final class MacBridgeServer: @unchecked Sendable {
         }
         peer.onMessage = { [weak self, weak peer] message in
             guard let self, self.activePeer === peer else { return }
+            if message.kind == .unpair {
+                MacTrustStore.removeAll()
+                self.identity = MacIdentityStore.reset()
+                self.fileReceiver.abortAll()
+                self.onUnpaired?()
+                peer?.cancel()
+                return
+            }
             if self.handleIncomingFileMessage(message, peer: peer) { return }
             self.onMessage?(message)
         }
@@ -504,6 +527,16 @@ private enum MacIdentityStore {
         }
         return identity
     }
+
+    static func reset() -> PairingIdentity {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        SecItemDelete(query as CFDictionary)
+        return loadOrCreate()
+    }
 }
 
 private enum MacTrustStore {
@@ -540,5 +573,13 @@ private enum MacTrustStore {
             kSecValueData as String: offer.publicKey
         ]
         SecItemAdd(add as CFDictionary, nil)
+    }
+
+    static func removeAll() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 }

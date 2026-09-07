@@ -63,6 +63,15 @@ Efter bekräftelsen begär Macen en SMS-snapshot och nya aviseringar skickas liv
 Telefon och Mac måste vara på samma lokala nätverk. Första gången kan macOS fråga
 om åtkomst till lokalt nätverk och brandväg.
 
+## Glöm enhet
+
+På Mac finns **Glöm parkopplad telefon** under Säkerhet. På Android finns
+**Glöm parkopplad Mac** i säkerhetskortet. Åtgärden kopplar ned enheterna,
+raderar den betrodda motpartens nyckel och roterar den lokala X25519-identiteten.
+Om båda enheterna är anslutna skickas återkallelsen även krypterat till den andra
+enheten. Nästa anslutning kräver alltid att en ny sexsiffrig kod jämförs på båda
+skärmarna. Macen rensar samtidigt SMS och aviseringar ur appens minne.
+
 ## Samtal
 
 Android ger inte tredjepartsappar tillgång till ljudet från ett pågående

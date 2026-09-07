@@ -28,6 +28,9 @@
 - Bluetooth-samtal kan bara ansluta till en redan parkopplad Galaxy-enhet. Den
   valda Bluetooth-adressen låses efter första valet för att undvika att appen
   byter till en annan parkopplad telefon med liknande namn.
+- **Glöm enhet** raderar trust-posten, roterar den lokala X25519-identiteten och
+  kopplar ned sessionen. En ansluten motpart får samma begäran autentiserad inne i
+  AES-GCM-kanalen. En offline motpart känner inte längre igen den roterade nyckeln.
 
 ## Behörighetsprincip
 
@@ -52,14 +55,14 @@ end-kryptering som MacDroids AES-GCM-kanal.
   sessionsnycklar med färska nonces men inte full forward secrecy. Inför en
   produktionslansering bör protokollet uppgraderas med autentiserade efemära
   X25519-nycklar och extern kryptogranskning.
-- Någon användarfunktion för nyckelrotation eller **Glöm enhet** är ännu inte
-  implementerad. Radering görs tills vidare genom att rensa appdata/Keychain.
+- Manuell identitetsrotation finns genom **Glöm enhet**, men automatisk periodisk
+  nyckelrotation och protokollmigrering är ännu inte implementerade.
 - Androids aviseringsåtkomst är systemövergripande. Ett per-app-filter bör
   implementeras före bred distribution.
 
 ## Innan lansering
 
-- Autentiserade efemära sessionsnycklar, nyckelrotation och **Glöm enhet**.
+- Autentiserade efemära sessionsnycklar och automatisk nyckelrotation.
 - Extern protokoll- och kryptogranskning.
 - Android Network Security Config och Certificate Transparency för eventuella
   centrala tjänster.

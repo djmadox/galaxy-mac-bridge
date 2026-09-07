@@ -101,6 +101,16 @@ import Testing
     #expect(decoded.transferId == transferId)
 }
 
+@Test func encryptedUnpairRequestRoundTrips() throws {
+    let message = try BridgeMessage.make(sequence: 14, kind: .unpair, payload: EmptyPayload())
+    let channel = SecureChannel(key: SymmetricKey(size: .bits256))
+
+    let opened = try channel.open(channel.seal(message), lastReceivedSequence: 13)
+    _ = try opened.decodePayload(as: EmptyPayload.self)
+
+    #expect(opened.kind == .unpair)
+}
+
 private extension Data {
     init(hex: String) {
         self.init(stride(from: 0, to: hex.count, by: 2).map { offset in

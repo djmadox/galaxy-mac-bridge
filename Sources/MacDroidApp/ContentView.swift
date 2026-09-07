@@ -479,6 +479,9 @@ struct CallsView: View {
 }
 
 struct SecurityView: View {
+    @EnvironmentObject private var store: AppStore
+    @State private var showingForgetConfirmation = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             PageHeader(title: "Säkerhet", subtitle: "Din anslutning är privat och verifierad.")
@@ -488,9 +491,32 @@ struct SecurityView: View {
             securityRow("Nätverk", "Direkt på lokalt nätverk; ingen central lagring", "network")
             securityRow("Telefon", "Privata nycklar sparas i Android Keystore", "smartphone")
             securityRow("Mac", "Privata nycklar sparas i Keychain", "laptopcomputer")
+            Divider()
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Återkalla parkoppling").font(.headline)
+                Text("Glömmer telefonens betrodda nyckel, kopplar ned och rensar SMS och aviseringar ur MacDroids minne.")
+                    .foregroundStyle(.secondary)
+                Button("Glöm parkopplad telefon", role: .destructive) {
+                    showingForgetConfirmation = true
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+            }
             Spacer()
         }
         .padding(32)
+        .confirmationDialog(
+            "Glöm parkopplad telefon?",
+            isPresented: $showingForgetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Glöm telefon", role: .destructive) {
+                store.forgetPairedDevice()
+            }
+            Button("Avbryt", role: .cancel) {}
+        } message: {
+            Text("En ny sexsiffrig kod måste bekräftas innan enheterna kan ansluta igen.")
+        }
     }
 
     private func securityRow(_ title: String, _ detail: String, _ icon: String) -> some View {

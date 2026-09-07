@@ -15,6 +15,8 @@ nätverket efter att användaren jämfört en sexsiffrig parkopplingskod.
 Privata nycklar lagras lokalt i macOS Keychain respektive krypteras med en
 icke-exporterbar nyckel i Android Keystore. Ingen meddelandetext, fil, kontakt,
 telefonnummer eller privat nyckel ska skrivas till diagnostikloggar.
+**Glöm enhet** raderar parkopplingsförtroendet, roterar den lokala privata
+identitetsnyckeln och tömmer Mac-appens minneskopior av SMS och aviseringar.
 
 Google Messages-vyn är Googles webbplats i en separat WebKit-datalagring.
 Inloggningsdata stannar lokalt och kan tas bort med **Rensa webbdata**.

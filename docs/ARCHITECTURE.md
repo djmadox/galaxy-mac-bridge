@@ -34,6 +34,10 @@ Samsung Galaxy                         MacBook
    nonces. Konstruktionen har ännu inte forward secrecy.
 7. En monotont ökande sekvens ingår som autentiserad data i AES-256-GCM och
    stoppar replay eller omsorterade kommandon.
+8. **Glöm enhet** skickar, när det går, ett autentiserat `unpair`-meddelande och
+   raderar trust-posten på båda sidor. Den lokala identitetsnyckeln roteras även
+   när motparten är offline, så en ensidig återkallelse alltid tvingar fram ny
+   SAS-verifiering på båda enheterna.
 
 Primär transport är en ihållande längdprefixad TCP-ström på LAN. Internet krävs inte. Ett
 framtida relay-läge får bara vidarebefordra redan end-to-end-krypterade paket
@@ -110,3 +114,4 @@ processterminering.
 5. Inbyggd strömmad filöverföring och MediaStore-mottagare.
 6. Samtalsstart och inkommande samtalsnotis.
 7. Bluetooth HFP-samtalskontroll; ljud ligger kvar på telefonen.
+8. Återkallelse, identitetsrotation och Glöm enhet.

@@ -1,6 +1,7 @@
 package se.macdroid.android.bridge
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.net.Uri
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,6 +55,16 @@ object BridgeRuntime {
 
     fun cancelFileTransfer() {
         client?.cancelOutgoingFileTransfer()
+    }
+
+    fun forgetPairedDevice(context: Context) {
+        val current = client
+        if (current != null) {
+            current.forgetPairedDevice()
+        } else {
+            IdentityStore(context.applicationContext).resetIdentityAndTrust()
+            update(BridgeUiState(status = "Parkopplingen har raderats"))
+        }
     }
 
     fun detach(client: LanBridgeClient) {

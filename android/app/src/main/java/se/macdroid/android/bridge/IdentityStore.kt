@@ -68,6 +68,13 @@ class IdentityStore(context: Context) {
             .apply()
     }
 
+    fun resetIdentityAndTrust(): BridgeIdentity {
+        preferences.edit().clear().commit()
+        val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+        if (store.containsAlias(KEY_ALIAS)) store.deleteEntry(KEY_ALIAS)
+        return loadOrCreate()
+    }
+
     private fun wrappingKey(): SecretKey {
         val store = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         (store.getKey(KEY_ALIAS, null) as? SecretKey)?.let { return it }

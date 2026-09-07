@@ -34,12 +34,14 @@ import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 
+private class PeerUnpairedException : Exception()
+
 class LanBridgeClient(context: Context) {
     private val context = context.applicationContext
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val nsd = context.getSystemService(NsdManager::class.java)
     private val identityStore = IdentityStore(context)
-    private val identity = identityStore.loadOrCreate()
+    private var identity = identityStore.loadOrCreate()
     private val fileReceiver = FileTransferReceiver(context)
     private val connecting = AtomicBoolean(false)
     private var socket: Socket? = null
@@ -126,6 +128,17 @@ class LanBridgeClient(context: Context) {
             localConfirmed = true
             sendPacket(JSONObject().put("type", "confirmation").put("confirmed", true))
             finishPairingIfReady()
+        }
+    }
+
+    fun forgetPairedDevice() {
+        scope.launch {
+            fileTransferJob?.cancel()
+            if (connected) {
+                runCatching { sendBridge("unpair", JSONObject()) }
+            }
+            identity = identityStore.resetIdentityAndTrust()
+            disconnect("Parkopplingen har raderats")
         }
     }
 
@@ -262,6 +275,8 @@ class LanBridgeClient(context: Context) {
                 input.readFully(bytes)
                 handle(JSONObject(String(bytes, Charsets.UTF_8)), localOffer)
             }
+        } catch (_: PeerUnpairedException) {
+            disconnect("Parkopplingen har raderats")
         } catch (_: Exception) {
             disconnect("Anslutningen bröts")
         }
@@ -379,6 +394,10 @@ class LanBridgeClient(context: Context) {
             "fileTransferComplete" -> fileReceiver.complete(payload)
             "fileTransferCancel" -> fileReceiver.cancel(payload)
             "fileTransferStatus" -> handleFileTransferStatus(payload)
+            "unpair" -> {
+                identity = identityStore.resetIdentityAndTrust()
+                throw PeerUnpairedException()
+            }
             "ping" -> sendBridge("pong", JSONObject())
             else -> error("Unsupported message kind")
         }

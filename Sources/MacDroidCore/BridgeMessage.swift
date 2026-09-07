@@ -16,6 +16,7 @@ public enum BridgeMessageKind: String, Codable, Sendable {
     case fileTransferComplete
     case fileTransferCancel
     case fileTransferStatus
+    case unpair
     case ping
     case pong
 }

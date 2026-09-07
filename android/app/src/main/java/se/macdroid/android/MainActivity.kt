@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -28,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -61,6 +63,9 @@ class MainActivity : ComponentActivity() {
                             NotificationRelayService.stopRelaying()
                             stopService(Intent(this, BridgeForegroundService::class.java))
                             finishAndRemoveTask()
+                        },
+                        forgetPairedDevice = {
+                            BridgeRuntime.forgetPairedDevice(applicationContext)
                         }
                     )
                 }
@@ -73,9 +78,11 @@ class MainActivity : ComponentActivity() {
 private fun SetupScreen(
     openNotificationAccess: () -> Unit,
     startBridge: () -> Unit,
-    stopAndExit: () -> Unit
+    stopAndExit: () -> Unit,
+    forgetPairedDevice: () -> Unit
 ) {
     var status by remember { mutableStateOf("Inte parkopplad") }
+    var showForgetConfirmation by remember { mutableStateOf(false) }
     val bridgeState by BridgeRuntime.state.collectAsState()
     val notificationPermission = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -164,6 +171,14 @@ private fun SetupScreen(
                 }
             }
         }
+        SetupCard("Säkerhet", "Radera Macens betrodda nyckel och kräv en ny sexsiffrig kod vid nästa parkoppling.") {
+            OutlinedButton(
+                onClick = { showForgetConfirmation = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Glöm parkopplad Mac")
+            }
+        }
         SetupCard("Avsluta", "Stoppar anslutningen, filöverföringar och aviseringsspeglingen. Ingenting fortsätter synka i bakgrunden.") {
             OutlinedButton(onClick = stopAndExit, modifier = Modifier.fillMaxWidth()) {
                 Text("Stoppa och avsluta")
@@ -178,6 +193,27 @@ private fun SetupScreen(
         }
         Text(bridgeState.status, color = if (bridgeState.connected) Color(0xFF16883A) else Color.Gray)
         Text(status, color = Color.Gray)
+    }
+
+    if (showForgetConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showForgetConfirmation = false },
+            title = { Text("Glöm parkopplad Mac?") },
+            text = { Text("Anslutningen bryts. En ny sexsiffrig kod måste bekräftas på båda enheterna.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showForgetConfirmation = false
+                    forgetPairedDevice()
+                }) {
+                    Text("Glöm Mac")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showForgetConfirmation = false }) {
+                    Text("Avbryt")
+                }
+            }
+        )
     }
 }
 

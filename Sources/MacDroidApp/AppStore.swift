@@ -84,6 +84,9 @@ final class AppStore: ObservableObject {
                 self?.pairingCode = nil
             }
         }
+        bridge.onUnpaired = { [weak self] in
+            Task { @MainActor in self?.clearPairedDeviceData() }
+        }
         bridge.onMessage = { [weak self] message in
             Task { @MainActor in self?.handle(message) }
         }
@@ -99,6 +102,11 @@ final class AppStore: ObservableObject {
 
     func confirmPairing() {
         bridge.confirmPairing()
+    }
+
+    func forgetPairedDevice() {
+        cancelFileTransfer()
+        bridge.forgetPairedDevice()
     }
 
     func refreshSMS() {
@@ -297,9 +305,30 @@ final class AppStore: ObservableObject {
                 isTransferringFiles = false
                 fileTransferStatus = payload.error ?? "Filöverföringen misslyckades."
             }
+        case .unpair:
+            clearPairedDeviceData()
         default:
             break
         }
+    }
+
+    private func clearPairedDeviceData() {
+        let notificationIDs = notifications.map(\.id)
+        if !notificationIDs.isEmpty {
+            UNUserNotificationCenter.current().removeDeliveredNotifications(withIdentifiers: notificationIDs)
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: notificationIDs)
+        }
+        isConnected = false
+        pairingCode = nil
+        phoneName = "Ingen telefon"
+        notifications.removeAll()
+        conversations.removeAll()
+        smsSyncBuffer.removeAll()
+        isReceivingFullSMSSync = false
+        activeIncomingTransferID = nil
+        isTransferringFiles = false
+        fileTransferProgress = 0
+        fileTransferStatus = "Parkopplingen har raderats."
     }
 
     private func handleIncomingFile(_ status: FileTransferStatusPayload, fileName: String) {
